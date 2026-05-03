@@ -75,8 +75,7 @@ class TreeMapTest {
         TreeMap<Integer, String> map = new TreeMap<>();
         Integer[] arr = new Integer[]{35, 26, 15, 24, 33, 4, 12, 1, 23, 21, 2, 5};
 
-        for (Integer i : arr) {
-            map.put(i, Integer.toString(i));
+        for (Integer i : arr) {map.put(i, Integer.toString(i));
         }
 
         assertEquals(1, map.firstEntry().getKey());

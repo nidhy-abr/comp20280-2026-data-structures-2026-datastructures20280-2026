@@ -28,6 +28,24 @@ public class SplayTreeMap<K, V> extends TreeMap<K, V> {
      */
     private void splay(Position<Entry<K, V>> p) {
         // TODO
+        while (!isRoot(p)) {
+            Position<Entry<K, V>> parent = parent(p);
+            if (isRoot(parent)) {
+                tree.rotate(p);
+            } else {
+                Position<Entry<K, V>> grand = parent(parent);
+                boolean pLeft = (p == left(parent));
+                boolean parentLeft = (parent == left(grand));
+
+                if (pLeft == parentLeft) {
+                    tree.rotate(parent);
+                    tree.rotate(p);
+                } else {
+                    tree.rotate(p);
+                    tree.rotate(p);
+                }
+            }
+        }
     }
 
     /**
@@ -35,9 +53,14 @@ public class SplayTreeMap<K, V> extends TreeMap<K, V> {
      *
      * @param p
      */
-    //@Override
+    @Override
     protected void rebalanceAccess(Position<Entry<K, V>> p) {
-        // TODO
+        if (p == null) return;
+        if (isExternal(p)) {
+            if (isRoot(p)) return;
+            p = parent(p);
+        }
+        splay(p);
     }
 
     /**
@@ -45,7 +68,7 @@ public class SplayTreeMap<K, V> extends TreeMap<K, V> {
      *
      * @param p
      */
-    //@Override
+    @Override
     protected void rebalanceInsert(Position<Entry<K, V>> p) {
         // TODO
         splay(p);
@@ -56,9 +79,22 @@ public class SplayTreeMap<K, V> extends TreeMap<K, V> {
      *
      * @param p
      */
-    //@Override
+    @Override
     protected void rebalanceDelete(Position<Entry<K, V>> p) {
         // TODO
+        if (!isEmpty()) {
+            if (p == null) p = root();
+            if (isExternal(p)) {
+                if (isRoot(p)) return;
+                p = parent(p);
+            }
+            splay(p);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return tree.toString();
     }
 
     public static void main(String[] args) {

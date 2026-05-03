@@ -2,6 +2,8 @@ package project20280.hashtable;
 
 import project20280.interfaces.Entry;
 
+import java.util.ArrayList;
+
 public class ProbeHashMap<K, V> extends AbstractHashMap<K, V> {
     private MapEntry<K, V>[] table;
     private final MapEntry<K, V> DEFUNCT = new MapEntry<>(null, null);
@@ -29,31 +31,62 @@ public class ProbeHashMap<K, V> extends AbstractHashMap<K, V> {
         table = new MapEntry[capacity];
     }
 
+    private boolean isAvailable(int j) {
+        return (table[j] == null || table[j] == DEFUNCT);
+    }
+
     int findSlot(int h, K k) {
         // TODO
-        return 0;
+        int avail = -1;   // index of first available slot (null or DEFUNCT)
+        int j = h;
+        do {
+            if (isAvailable(j)) {
+                if (avail == -1) avail = j; // mark first available
+                if (table[j] == null) break; // definite miss; stop searching
+            } else if (table[j].getKey().equals(k)) {
+                return j; // key found
+            }
+            j = (j + 1) % capacity;
+        } while (j != h);
+        return -(avail + 1); // search failed; return encoded available slot
     }
 
     @Override
     protected V bucketGet(int h, K k) {
         // TODO
-        return null;
+        int j = findSlot(h, k);
+        if (j < 0) return null;
+        return table[j].getValue();
     }
 
     @Override
     protected V bucketPut(int h, K k, V v) {
         // TODO
+        int j = findSlot(h, k);
+        if (j >= 0) {                         // key already exists; update value
+            return table[j].setValue(v);
+        }
+        table[-(j + 1)] = new MapEntry<>(k, v); // insert at available slot
+        n++;
         return null;
     }
 
     @Override
     protected V bucketRemove(int h, K k) {
         // TODO
-        return null;
+        int j = findSlot(h, k);
+        if (j < 0) return null;
+        V answer = table[j].getValue();
+        table[j] = DEFUNCT;  // mark as defunct (not null, to keep probe chain intact)
+        n--;
+        return answer;
     }
 
     @Override
     public Iterable<Entry<K, V>> entrySet() {
-        return null;
+        ArrayList<Entry<K, V>> buffer = new ArrayList<>();
+        for (int h = 0; h < capacity; h++)
+            if (!isAvailable(h)) buffer.add(table[h]);
+        return buffer;
     }
 }

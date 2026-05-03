@@ -32,7 +32,7 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
      */
     protected int height(Position<Entry<K, V>> p) {
         // TODO
-        return 0;
+        return (p == null) ? 0 : tree.getAux(p);
     }
 
     /**
@@ -40,6 +40,7 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
      */
     protected void recomputeHeight(Position<Entry<K, V>> p) {
         // TODO
+        tree.setAux(p, 1 + Math.max(height(left(p)), height(right(p))));
     }
 
     /**
@@ -47,7 +48,7 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
      */
     protected boolean isBalanced(Position<Entry<K, V>> p) {
         // TODO
-        return false;
+        return Math.abs(height(left(p)) - height(right(p))) <= 1;
     }
 
     /**
@@ -55,7 +56,12 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
      */
     protected Position<Entry<K, V>> tallerChild(Position<Entry<K, V>> p) {
         // TODO
-        return null;
+        if (height(left(p)) > height(right(p))) return left(p);
+        if (height(left(p)) < height(right(p))) return right(p);
+
+        if (isRoot(p)) return left(p);
+        if (p == left(parent(p))) return left(p);
+        else return right(p);
     }
 
     /**
@@ -65,6 +71,20 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
      */
     protected void rebalance(Position<Entry<K, V>> p) {
         // TODO
+        while (p != null) {
+            int oldHeight = height(p);
+
+            if (!isBalanced(p)) {
+                p = tree.restructure(tallerChild(tallerChild(p)));
+                recomputeHeight(left(p));
+                recomputeHeight(right(p));
+            }
+
+            recomputeHeight(p);
+
+            if (height(p) == oldHeight) p = null;
+            else p = parent(p);
+        }
     }
 
     /**
@@ -81,6 +101,7 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
     @Override
     protected void rebalanceDelete(Position<Entry<K, V>> p) {
         // TODO
+        rebalance(p);
     }
 
     /**
@@ -104,6 +125,11 @@ public class AVLTreeMap<K, V> extends TreeMap<K, V> {
     public String toBinaryTreeString() {
         BinaryTreePrinter<Entry<K, V>> btp = new BinaryTreePrinter<>(this.tree);
         return btp.print();
+    }
+
+    @Override
+    public String toString() {
+        return tree.toString();
     }
 
     public static void main(String[] args) {

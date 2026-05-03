@@ -28,8 +28,8 @@ public class CircularlyLinkedList<E> implements List<E> {
         }
     }
 
-    private final Node<E> tail = null;
-    private final int size = 0;
+    private Node<E> tail = null;
+    private int size = 0;
 
     public CircularlyLinkedList() {
 
@@ -42,9 +42,23 @@ public class CircularlyLinkedList<E> implements List<E> {
 
     @Override
     public E get(int i) {
-        // TODO
-        return null;
+        if (i < 0 || i >= size) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        Node<E> current = tail;
+        // If list is not empty, start at the first node (tail.next)
+        if (tail != null) {
+            current = tail.getNext(); // Head is tail.getNext()
+
+            for (int j = 0; j < i; j++) {
+                current = current.getNext();
+            }
+        }
+
+        return current.getData();
     }
+
 
     /**
      * Inserts the given element at the specified index of the list, shifting all
@@ -56,16 +70,69 @@ public class CircularlyLinkedList<E> implements List<E> {
     @Override
     public void add(int i, E e) {
         // TODO
+        if (i < 0 || i > size) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (i == 0) {
+            addFirst(e);
+        } else if (i == size) {
+            addLast(e);
+        } else {
+            Node<E> current = tail.getNext(); // Start at head
+
+            // Find the node before the insertion point
+            for (int j = 0; j < i - 1; j++) {
+                current = current.getNext();
+            }
+
+            // Insert new node after current
+            Node<E> newNode = new Node<>(e, current.getNext());
+            current.setNext(newNode);
+            size++;
+        }
+
     }
 
     @Override
     public E remove(int i) {
-        // TODO
-        return null;
+        //TODO
+        if (i < 0 || i >= size) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (i == 0) {
+            return removeFirst();
+        } else if (i == size - 1) {
+            return removeLast();
+        } else {
+            Node<E> current = tail.getNext(); // Start at head
+
+            // Find the node before the one to remove
+            for (int j = 0; j < i - 1; j++) {
+                current = current.getNext();
+            }
+
+            Node<E> toRemove = current.getNext();
+            current.setNext(toRemove.getNext());
+
+            // If we removed the last node, update tail
+            if (toRemove == tail) {
+                tail = current;
+            }
+
+            size--;
+            return toRemove.getData();
+        }
     }
+
 
     public void rotate() {
         // TODO
+        if (tail != null) {
+            tail = tail.getNext();
+
+        }
     }
 
     private class CircularlyLinkedListIterator<E> implements Iterator<E> {
@@ -98,23 +165,66 @@ public class CircularlyLinkedList<E> implements List<E> {
     @Override
     public E removeFirst() {
         // TODO
-        return null;
+        if (isEmpty()) {
+            return null;
+        }
+        Node<E> head = tail.getNext();
+        E data = head.getData();
+
+        if (size == 1) {
+            tail = null;
+        } else {
+            tail.setNext(head.getNext());
+        }
+        size--;
+        return data;
     }
 
     @Override
     public E removeLast() {
-        // TODO
-        return null;
+        if (isEmpty()) {
+            return null;
+        }
+
+        if (size == 1) {
+            return removeFirst();
+        }
+
+        // Find the node before tail
+        Node<E> current = tail.getNext(); // Start at head
+        while (current.getNext() != tail) {
+            current = current.getNext();
+        }
+
+        E data = tail.getData();
+        current.setNext(tail.getNext()); // Connect to head
+        tail = current;
+        size--;
+
+        return data;
     }
 
     @Override
     public void addFirst(E e) {
-        // TODO
+        Node<E> newNode = new Node<>(e, null);
+
+        if (isEmpty()) {
+            // First element - points to itself
+            newNode.setNext(newNode);
+            tail = newNode;
+        } else {
+            // Insert at beginning (after tail)
+            newNode.setNext(tail.getNext());
+            tail.setNext(newNode);
+        }
+
+        size++;
     }
 
     @Override
     public void addLast(E e) {
-        // TODO
+        addFirst(e); // Add at beginning
+        rotate();    // Rotate to make it the last element
     }
 
 
